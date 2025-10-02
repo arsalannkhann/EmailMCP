@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Simplified EmailMCP stack without VPC for testing'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: emailmcp
+    Description: Name of the project
+  
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+
+Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${ProjectName}"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 tagged images",
+                "selection": {
+                  "tagStatus": "tagged",
+                  "tagPrefixList": ["v", "latest"],
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              },
+              {
+                "rulePriority": 2,
+                "description": "Delete untagged images older than 1 day",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 1
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-ecr"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Secrets Manager
+  EmailCredentialsSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${ProjectName}/gmail-${Environment}"
+      Description: Gmail API credentials for EmailMCP service
+      SecretString: |
+        {
+          "client_id": "PLACEHOLDER_CLIENT_ID",
+          "client_secret": "PLACEHOLDER_CLIENT_SECRET",
+          "refresh_token": "PLACEHOLDER_REFRESH_TOKEN"
+        }
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-gmail-secret"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # CloudWatch Log Group
+  CloudWatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}-${Environment}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-logs"
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ECS Cluster (without VPC)
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ProjectName}-cluster"
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-cluster"
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  ECRRepositoryURI:
+    Description: ECR Repository URI
+    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}"
+    Export:
+      Name: !Sub "${ProjectName}-ECRRepositoryURI"
+
+  SecretsManagerArn:
+    Description: Secrets Manager ARN for Gmail credentials
+    Value: !Ref EmailCredentialsSecret
+    Export:
+      Name: !Sub "${ProjectName}-SecretsManagerArn"
+
+  ECSClusterName:
+    Description: ECS Cluster Name
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub "${ProjectName}-ECSClusterName"
+
+  CloudWatchLogGroup:
+    Description: CloudWatch Log Group
+    Value: !Ref CloudWatchLogGroup
+    Export:
+      Name: !Sub "${ProjectName}-LogGroup"

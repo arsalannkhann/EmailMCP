@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Minimal EmailMCP test stack to verify permissions'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: emailmcp
+    Description: Name of the project
+
+Resources:
+  # Test ECR Repository creation first
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${ProjectName}"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-ecr"
+
+  # Test Secrets Manager
+  EmailCredentialsSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${ProjectName}/gmail"
+      Description: Gmail API credentials for EmailMCP service
+      SecretString: |
+        {
+          "client_id": "PLACEHOLDER_CLIENT_ID",
+          "client_secret": "PLACEHOLDER_CLIENT_SECRET",
+          "refresh_token": "PLACEHOLDER_REFRESH_TOKEN"
+        }
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-gmail-secret"
+
+Outputs:
+  ECRRepositoryURI:
+    Description: ECR Repository URI
+    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}"
+    
+  SecretsManagerArn:
+    Description: Secrets Manager ARN for Gmail credentials
+    Value: !Ref EmailCredentialsSecret
