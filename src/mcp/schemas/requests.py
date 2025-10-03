@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Dict, Any
 
 class EmailRequest(BaseModel):
     """Request model for sending emails"""
@@ -40,3 +40,19 @@ class EmailRequest(BaseModel):
                 "html": False
             }
         }
+
+# Multi-tenant OAuth and Email Models
+class OAuthRequest(BaseModel):
+    """OAuth authorization request for user"""
+    user_id: str
+    redirect_uri: str
+
+class MultiTenantEmailRequest(BaseModel):
+    """Request model for multi-tenant email sending"""
+    to: List[EmailStr]
+    subject: str
+    body: str
+    body_type: str = "text"  # "text" or "html"
+    cc: Optional[List[EmailStr]] = None
+    bcc: Optional[List[EmailStr]] = None
+    attachments: Optional[List[Dict[str, Any]]] = None
