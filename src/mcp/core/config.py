@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     aws_secrets_name: Optional[str] = None
     
+    # GCP Configuration
+    gcp_project_id: Optional[str] = None
+    gcp_region: str = "us-central1"
+    
     # Redis Configuration
     redis_url: str = "redis://localhost:6379/0"
     idempotency_ttl: int = 86400
@@ -64,6 +68,11 @@ class Settings(BaseSettings):
     def use_aws_secrets(self) -> bool:
         """Check if should use AWS Secrets Manager"""
         return self.is_production and self.aws_secrets_name is not None
+    
+    @property
+    def use_gcp_secrets(self) -> bool:
+        """Check if should use GCP Secret Manager"""
+        return self.is_production and self.gcp_project_id is not None
     
     def get_email_provider_priority(self) -> list[str]:
         """Get email provider priority list"""
