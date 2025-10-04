@@ -18,7 +18,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets'
 ]
 
-CREDENTIALS_PATH = os.environ.get('GOOGLE_CREDENTIALS_PATH', 'credentials.json')
+CREDENTIALS_PATH = os.environ.get('GOOGLE_CREDENTIALS_PATH', '/Users/arsalankhan/Downloads/client_secret_1009146957673-h7964rj4s2a9be9ekrqh0j2dehk4mu5t.apps.googleusercontent.com.json')
 TOKEN_PATH = os.environ.get('GOOGLE_TOKEN_PATH', 'token.json')
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "mcp-redis-prod")
@@ -39,7 +39,7 @@ def main():
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDENTIALS_PATH,
                 SCOPES,
-                redirect_uri="https://mcp.orionac.in/oauth2callback"
+                redirect_uri="https://localhost/"
             )
             creds = flow.run_local_server()
         # Save the credentials for next run

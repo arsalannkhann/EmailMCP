@@ -5,14 +5,14 @@ const CONFIG = {
     EMAILMCP_API_KEY: 'emailmcp-oWyFsIqTUhnoOZQDaEPBfMKOQV2ElAtw',
     
     // Google OAuth Configuration
-    GOOGLE_CLIENT_ID: '480969272523-fkgsdj73m89og99teqqbk13d15q172eq.apps.googleusercontent.com',
+    GOOGLE_CLIENT_ID: '1009146957673-h7964rj4s2a9be9ekrqh0j2dehk4mu5t.apps.googleusercontent.com',
     
     // Backend Server Configuration (if using proxy)
     // Set to null if connecting directly to EmailMCP
     BACKEND_URL: null, // e.g., 'http://localhost:3000/api'
     
     // OAuth Callback Configuration
-    OAUTH_REDIRECT_URI: window.location.origin + '/callback.html',
+    OAUTH_REDIRECT_URI: 'http://localhost:8080/callback.html',
     
     // Feature Flags
     USE_BACKEND_PROXY: false, // Set to true if using your own backend

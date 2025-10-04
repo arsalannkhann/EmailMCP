@@ -55,15 +55,20 @@
             }
 
             try {
-                // Call EmailMCP callback endpoint
+                // Call EmailMCP callback endpoint with form data
+                const formData = new URLSearchParams();
+                formData.append('code', code);
+                formData.append('state', state);
+
                 const response = await fetch(
-                    `${CONFIG.EMAILMCP_SERVICE_URL}/v1/oauth/callback?code=${code}&state=${state}`,
+                    `${CONFIG.EMAILMCP_SERVICE_URL}/v1/oauth/callback`,
                     {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${CONFIG.EMAILMCP_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: formData
                     }
                 );
 
