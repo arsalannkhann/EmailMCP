@@ -315,15 +315,32 @@ oauth_authorization:
 oauth_callback:
   method: GET
   path: /v1/oauth/callback
-  description: Handle OAuth callback from Google
-  authentication: API Key required
+  description: Handle OAuth callback from Google (public endpoint)
+  authentication: None (public endpoint for Google OAuth redirects)
   parameters:
-    code: string (required)
-    state: string (required)
+    code: string (required) - Authorization code from Google
+    state: string (required) - User ID from state parameter
+    redirect_uri: string (optional) - Redirect URI used in authorization
   response_schema:
     status: string
     email_address: string
     user_id: string
+    message: string
+
+oauth_callback_post:
+  method: POST
+  path: /v1/oauth/callback
+  description: Handle OAuth callback via POST (for frontend bridge calls)
+  authentication: API Key required
+  parameters:
+    code: string (required) - Authorization code from Google
+    state: string (required) - User ID from state parameter
+    redirect_uri: string (optional) - Redirect URI used in authorization
+  response_schema:
+    status: string
+    email_address: string
+    user_id: string
+    message: string
 ```
 
 ### Email Management Endpoints
