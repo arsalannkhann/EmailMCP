@@ -266,14 +266,31 @@ docker run -p 8080:80 emailmcp-frontend
 
 ## 🐛 Troubleshooting
 
+### OAuth 404 Error During Callback
+
+**Problem**: Getting 404 error when OAuth redirects back from Google
+
+**Root Cause**: The OAuth callback endpoint needs to be a public GET endpoint
+
+**Solution**: 
+1. Update to the latest version of EmailMCP (contains the fix)
+2. Ensure your redirect URI in Google Cloud Console matches exactly:
+   - For local: `http://localhost:8001/v1/oauth/callback`
+   - For production: `https://emailmcp-hcnqp547xa-uc.a.run.app/v1/oauth/callback`
+3. The callback endpoint is now a public GET endpoint (no API key required)
+4. See [OAUTH_CONFIGURATION.md](../OAUTH_CONFIGURATION.md) for detailed setup
+
 ### OAuth Callback Fails
 
 **Problem**: Redirect URI mismatch error
 
 **Solution**: 
 1. Check Google Cloud Console > Credentials
-2. Ensure callback URL matches exactly: `http://localhost:8000/callback.html`
-3. Update `config.js` if needed
+2. Add ALL required redirect URIs:
+   - `http://localhost:8001/v1/oauth/callback` (backend callback)
+   - `http://localhost:8000/callback.html` (frontend callback page)
+3. Ensure URLs match exactly (including http/https, port numbers, paths)
+4. Wait a few minutes after adding URIs for changes to propagate
 
 ### Gmail Not Connecting
 
@@ -283,6 +300,7 @@ docker run -p 8080:80 emailmcp-frontend
 1. Check browser console for errors
 2. Verify EmailMCP service is running: `curl https://emailmcp-hcnqp547xa-uc.a.run.app/health`
 3. Check API key is correct in `config.js`
+4. Verify your OAuth credentials are configured in the backend `.env` file
 
 ### Email Send Fails
 

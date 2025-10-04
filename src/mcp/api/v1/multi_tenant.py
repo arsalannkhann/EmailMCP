@@ -33,18 +33,46 @@ async def initiate_oauth_flow(
         log.error(f"OAuth initiation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/oauth/callback")
+@router.get("/oauth/callback")
 async def handle_oauth_callback(
-    code: str,
-    state: str,
-    credentials = Depends(verify_api_key)
+    code: str = Query(..., description="Authorization code from Google"),
+    state: str = Query(..., description="User ID from state parameter"),
+    redirect_uri: Optional[str] = Query(None, description="Redirect URI used in authorization")
 ):
-    """Handle OAuth callback and store user tokens"""
+    """Handle OAuth callback and store user tokens (public endpoint for Google redirect)"""
     try:
         service = MultiTenantEmailService()
         result = await service.process_oauth_callback(
             authorization_code=code,
-            user_id=state
+            user_id=state,
+            redirect_uri=redirect_uri
+        )
+        
+        log.info(f"OAuth completed for user: {state}")
+        return {
+            "status": "success",
+            "user_id": state,
+            "email_address": result.email_address,
+            "message": "Gmail account connected successfully"
+        }
+    except Exception as e:
+        log.error(f"OAuth callback failed: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/oauth/callback")
+async def handle_oauth_callback_post(
+    code: str = Query(..., description="Authorization code from Google"),
+    state: str = Query(..., description="User ID from state parameter"),
+    redirect_uri: Optional[str] = Query(None, description="Redirect URI used in authorization"),
+    credentials = Depends(verify_api_key)
+):
+    """Handle OAuth callback via POST (for frontend bridge calls)"""
+    try:
+        service = MultiTenantEmailService()
+        result = await service.process_oauth_callback(
+            authorization_code=code,
+            user_id=state,
+            redirect_uri=redirect_uri
         )
         
         log.info(f"OAuth completed for user: {state}")

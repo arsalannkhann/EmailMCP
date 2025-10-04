@@ -53,8 +53,19 @@ GET /v1/reports/users/{user_id}
 
 - [GCP Deployment Guide](./GCP-DEPLOYMENT.md)
 - [AWS Deployment Guide](./DEPLOYMENT.md)
+- [OAuth Configuration Guide](./OAUTH_CONFIGURATION.md) - **Fix OAuth 404 errors**
 - [Multi-Tenant Integration](./docs/multi-tenant-integration.md)
 - [Gmail API Integration](./GMAIL_API_INTEGRATION.md)
+
+## ⚠️ OAuth Configuration
+
+If you're experiencing OAuth 404 errors or callback issues:
+
+1. **Check your Google Cloud Console redirect URIs** - They must exactly match your callback URL
+2. **Update your OAuth credentials** - See [OAUTH_CONFIGURATION.md](./OAUTH_CONFIGURATION.md) for detailed setup
+3. **Configure your `.env` file** - Use `.env.example` as a template
+
+**Common Issue**: The OAuth callback endpoint must be accessible as a public GET endpoint at `/v1/oauth/callback`.
 
 ---
 
