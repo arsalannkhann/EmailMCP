@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailMCP Sample Frontend - Visual Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+        }
+        .demo-section h2 {
+            margin-bottom: 20px;
+            color: #4285f4;
+        }
+        .screenshot {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4285f4;
+        }
+        .feature-card h3 {
+            margin-bottom: 10px;
+            color: #4285f4;
+        }
+        .code-block {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+        .mockup {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            margin: 15px 0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+        .status-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .flowchart {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .flow-step {
+            display: inline-block;
+            padding: 15px 25px;
+            background: white;
+            border: 2px solid #4285f4;
+            border-radius: 8px;
+            margin: 10px;
+            font-weight: 600;
+        }
+        .arrow {
+            display: inline-block;
+            color: #4285f4;
+            font-size: 2rem;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📧 EmailMCP Sample Frontend</h1>
+            <p class="subtitle">Complete Integration Demo & Visual Guide</p>
+        </header>
+
+        <div class="demo-section">
+            <h2>🎯 What You're Getting</h2>
+            <p>A complete, production-ready frontend application with full EmailMCP integration. No build step required!</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🔐 Authentication</h3>
+                    <p>Google OAuth sign-in with session management</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📨 Gmail Integration</h3>
+                    <p>Complete OAuth flow to connect Gmail accounts</p>
+                </div>
+                <div class="feature-card">
+                    <h3>✉️ Email Sending</h3>
+                    <p>Send emails with HTML, CC, BCC support</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📊 Analytics</h3>
+                    <p>Dashboard with charts and statistics</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔍 Testing</h3>
+                    <p>Built-in connection testing utility</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📱 Responsive</h3>
+                    <p>Works on desktop, tablet, and mobile</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 Quick Start</h2>
+            <p>Get started in 3 simple steps:</p>
+            
+            <div class="code-block">
+# Step 1: Navigate to frontend directory
+cd sample-frontend
+
+# Step 2: Start the server
+python3 -m http.server 8000
+
+# Step 3: Open in browser
+open http://localhost:8000
+            </div>
+
+            <p><strong>That's it!</strong> The application will be running.</p>
+            
+            <a href="#" class="btn">📖 View Full Documentation</a>
+            <a href="#" class="btn">🧪 Try Live Demo</a>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎨 User Interface Preview</h2>
+            
+            <h3>Main Dashboard</h3>
+            <div class="mockup">
+                <div style="text-align: center; padding: 40px; border: 2px dashed #ccc; border-radius: 8px;">
+                    <h3>📧 EmailMCP Sample Integration</h3>
+                    <p style="color: #666; margin: 10px 0;">Complete Authentication & Email API Demo</p>
+                    <div style="margin: 20px 0;">
+                        <div style="display: inline-block; padding: 10px 20px; background: white; border: 2px solid #4285f4; border-radius: 4px;">
+                            🔵 Sign in with Google
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Connection Status</h3>
+            <div class="mockup">
+                <p><strong>📡 Connection Status</strong></p>
+                <div style="margin-top: 15px;">
+                    <div style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">
+                        <span>Backend Server:</span>
+                        <span class="status-badge status-success">🟢 Connected</span>
+                    </div>
+                    <div style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">
+                        <span>EmailMCP Service:</span>
+                        <span class="status-badge status-success">🟢 Connected</span>
+                    </div>
+                    <div style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">
+                        <span>Gmail Connection:</span>
+                        <span class="status-badge status-info">🟢 Connected</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Email Composer</h3>
+            <div class="mockup">
+                <p><strong>✉️ Compose Email</strong></p>
+                <div style="margin-top: 15px;">
+                    <div style="margin: 10px 0;">
+                        <strong>To:</strong> <input type="text" placeholder="recipient@example.com" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <strong>Subject:</strong> <input type="text" placeholder="Email subject" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <strong>Message:</strong>
+                        <textarea placeholder="Email message..." style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; height: 100px;"></textarea>
+                    </div>
+                    <button style="padding: 10px 20px; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Send Email</button>
+                </div>
+            </div>
+
+            <h3>Analytics Dashboard</h3>
+            <div class="mockup">
+                <p><strong>📊 Email Analytics</strong></p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #4285f4;">42</div>
+                        <div style="color: #666;">Total Emails</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #4285f4;">40</div>
+                        <div style="color: #666;">Successful</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #4285f4;">2</div>
+                        <div style="color: #666;">Failed</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #4285f4;">95.2%</div>
+                        <div style="color: #666;">Success Rate</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
+                    📈 [Interactive Chart Would Appear Here]
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔄 Integration Flow</h2>
+            <div class="flowchart">
+                <div class="flow-step">User Signs In<br>with Google</div>
+                <div class="arrow">→</div>
+                <div class="flow-step">Connect Gmail<br>OAuth</div>
+                <div class="arrow">→</div>
+                <div class="flow-step">Send Emails<br>via EmailMCP</div>
+                <div class="arrow">→</div>
+                <div class="flow-step">View<br>Analytics</div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ Key Features</h2>
+            
+            <h3>1. Google OAuth Sign-In</h3>
+            <ul style="line-height: 2;">
+                <li>✅ One-click authentication</li>
+                <li>✅ Secure session management</li>
+                <li>✅ Profile picture and name display</li>
+                <li>✅ Automatic session persistence</li>
+            </ul>
+
+            <h3>2. Gmail Integration</h3>
+            <ul style="line-height: 2;">
+                <li>✅ Complete OAuth 2.0 flow</li>
+                <li>✅ Automatic token management</li>
+                <li>✅ Connection status monitoring</li>
+                <li>✅ Easy disconnect option</li>
+            </ul>
+
+            <h3>3. Email Sending</h3>
+            <ul style="line-height: 2;">
+                <li>✅ Multiple recipients support</li>
+                <li>✅ CC and BCC functionality</li>
+                <li>✅ HTML and plain text emails</li>
+                <li>✅ Form validation</li>
+                <li>✅ Real-time sending feedback</li>
+            </ul>
+
+            <h3>4. Analytics & Reporting</h3>
+            <ul style="line-height: 2;">
+                <li>✅ Total emails sent counter</li>
+                <li>✅ Success rate calculation</li>
+                <li>✅ Interactive Chart.js visualizations</li>
+                <li>✅ Recent email history</li>
+                <li>✅ Auto-refresh after sending</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>📦 What's Included</h2>
+            
+            <div class="code-block">
+sample-frontend/
+├── index.html              # Main application page
+├── callback.html          # OAuth callback handler
+├── test-connection.html   # Connection testing utility
+├── app.js                 # Application logic (~600 lines)
+├── style.css              # Responsive styles (~400 lines)
+├── config.js              # Configuration management
+├── setup.sh               # Interactive setup script
+├── Dockerfile             # Docker deployment config
+├── README.md              # Comprehensive documentation
+├── TESTING.md             # Testing guide (50+ scenarios)
+└── backend-proxy/         # Optional backend server
+    ├── server.js          # Express.js proxy
+    ├── package.json       # Dependencies
+    ├── .env.example       # Config template
+    └── README.md          # Backend documentation
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🛠️ Technology Stack</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Frontend</h3>
+                    <p>Pure HTML, CSS, JavaScript<br>No build step required!</p>
+                </div>
+                <div class="feature-card">
+                    <h3>OAuth</h3>
+                    <p>Google OAuth 2.0<br>Gmail API integration</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Charts</h3>
+                    <p>Chart.js for visualizations<br>CDN included</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Backend (Optional)</h3>
+                    <p>Express.js proxy<br>Hide API keys</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📚 Documentation</h2>
+            <p>Comprehensive documentation included:</p>
+            <ul style="line-height: 2;">
+                <li>📖 <strong>README.md</strong> - Complete setup and usage guide</li>
+                <li>🧪 <strong>TESTING.md</strong> - 50+ test scenarios with expected results</li>
+                <li>🔧 <strong>backend-proxy/README.md</strong> - Backend deployment guide</li>
+                <li>⚡ <strong>QUICKSTART.md</strong> - Get started in 5 minutes</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎓 Next Steps</h2>
+            <ol style="line-height: 2;">
+                <li><strong>Try It Out:</strong> <code>cd sample-frontend && python3 -m http.server 8000</code></li>
+                <li><strong>Test Features:</strong> Sign in, connect Gmail, send emails</li>
+                <li><strong>Customize:</strong> Update colors, add features, modify UI</li>
+                <li><strong>Deploy:</strong> Vercel, Netlify, Docker, or GitHub Pages</li>
+                <li><strong>Integrate:</strong> Add to your existing application</li>
+            </ol>
+        </div>
+
+        <div class="demo-section" style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2 style="color: white;">🚀 Ready to Get Started?</h2>
+            <p style="font-size: 1.2rem; margin: 20px 0;">Complete sample frontend with authentication, email sending, and analytics</p>
+            <div class="code-block" style="text-align: left; max-width: 600px; margin: 20px auto;">
+cd sample-frontend
+python3 -m http.server 8000
+# Open http://localhost:8000
+            </div>
+            <p style="margin-top: 20px;">
+                <span class="status-badge status-success">✅ Production Ready</span>
+                <span class="status-badge status-info">✅ Well Documented</span>
+                <span class="status-badge status-success">✅ Easy to Deploy</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
