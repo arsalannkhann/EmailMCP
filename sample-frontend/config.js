@@ -2,10 +2,10 @@
 const CONFIG = {
     // EmailMCP Service Configuration (Production)
     EMAILMCP_SERVICE_URL: 'https://emailmcp-hcnqp547xa-uc.a.run.app',
-    EMAILMCP_API_KEY: 'emailmcp-oWyFsIqTUhnoOZQDaEPBfMKOQV2ElAtw',
+    EMAILMCP_API_KEY: 'api',
     
     // Google OAuth Configuration
-    GOOGLE_CLIENT_ID: '1009146957673-h7964rj4s2a9be9ekrqh0j2dehk4mu5t.apps.googleusercontent.com',
+    GOOGLE_CLIENT_ID: 'client_id',
     
     // Backend Server Configuration (if using proxy)
     // Set to null if connecting directly to EmailMCP
