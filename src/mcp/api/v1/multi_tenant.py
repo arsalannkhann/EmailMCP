@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 from datetime import datetime, timedelta
 import uuid
-from ..schemas.requests import OAuthRequest, MultiTenantEmailRequest
-from ..schemas.responses import OAuthResponse, EmailAnalyticsResponse
-from ..core.security import verify_api_key
-from ..core.logging import log
-from ..services.multi_tenant_service import MultiTenantEmailService
+from ...schemas.requests import OAuthRequest, MultiTenantEmailRequest
+from ...schemas.responses import OAuthResponse, EmailAnalyticsResponse
+from ...core.security import verify_api_key
+from ...core.logging import log
+from ...services.multi_tenant_service import MultiTenantEmailService
 
 router = APIRouter(prefix="/v1", tags=["multi-tenant"])
 

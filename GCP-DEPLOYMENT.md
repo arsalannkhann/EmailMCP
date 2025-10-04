@@ -58,7 +58,7 @@ This deployment supports complete multi-tenant functionality:
 
 ```bash
 # Set your project ID
-export PROJECT_ID="your-project-id"
+export PROJECT_ID="mcporionac"
 export REGION="us-central1"
 
 # Set the project
@@ -122,9 +122,9 @@ gcloud firestore indexes composite create \
 gcloud secrets create emailmcp-gmail-oauth-config \
   --data-file=- <<EOF
 {
-  "client_id": "your-client-id.apps.googleusercontent.com",
-  "client_secret": "your-client-secret",
-  "redirect_uri": "https://your-domain.com/v1/oauth/callback"
+  "client_id": "480969272523-fkgsdj73m89og99teqqbk13d15q172eq.apps.googleusercontent.com",
+  "client_secret": "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",
+  "redirect_uri": "https://salesos.orionac.in/settings/v1/oauth/callback"
 }
 EOF
 
@@ -149,6 +149,22 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:emailmcp-service@${PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/datastore.user"
+
+# Troubleshooting: If you get errors, ensure the service account exists and you have owner/editor permissions.
+# You can list service accounts with:
+#   gcloud iam service-accounts list
+# And check IAM policy with:
+#   gcloud projects get-iam-policy $PROJECT_ID
+
+# Multi-Tenant OAuth (Localhost Testing)
+# Initiate OAuth for a user using localhost redirect URI:
+curl -X POST "http://localhost:8001/v1/oauth/authorize" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user123",
+    "redirect_uri": "http://localhost:8001/v1/oauth/callback"
+  }'
 ```
 
 ## Step 6: Configure Environment Variables

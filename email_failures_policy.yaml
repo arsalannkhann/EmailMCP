@@ -1,0 +1,14 @@
+displayName: "Email Failures Alert"
+combiner: "OR"
+enabled: true
+conditions:
+  - displayName: "High email failure rate"
+    conditionThreshold:
+      filter: 'resource.type="cloud_run_revision" AND metric.type="logging.googleapis.com/user/email_failures"'
+      comparison: "COMPARISON_GT"
+      thresholdValue: 10
+      duration: "60s"
+      trigger:
+        count: 1
+notificationChannels:
+  - "projects/mcporionac/notificationChannels/14419702677544517635"

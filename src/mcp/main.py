@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import uuid
 import time
-from .api.v1 import messages
+from .api.v1 import messages, multi_tenant
 from .core.config import settings
 from .core.logging import log
 
@@ -54,6 +54,7 @@ async def add_request_id(request: Request, call_next):
         return response
 
 app.include_router(messages.router)
+app.include_router(multi_tenant.router)
 
 @app.get("/")
 async def root():
