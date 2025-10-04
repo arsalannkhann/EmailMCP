@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback - EmailMCP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card" style="max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>🔄 Processing Gmail Connection...</h1>
+            <p id="status-message">Please wait while we complete the OAuth flow...</p>
+            <div class="spinner" style="margin: 30px auto; width: 40px; height: 40px; border-width: 4px;"></div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // OAuth Callback Handler
+        async function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            const statusMessage = document.getElementById('status-message');
+
+            // Check for errors
+            if (error) {
+                statusMessage.innerHTML = `
+                    <p style="color: var(--danger-color); font-weight: bold;">
+                        ❌ OAuth Error: ${error}
+                    </p>
+                    <p>Please try connecting your Gmail account again.</p>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 3000);
+                return;
+            }
+
+            // Validate we have the required parameters
+            if (!code || !state) {
+                statusMessage.innerHTML = `
+                    <p style="color: var(--danger-color); font-weight: bold;">
+                        ❌ Missing OAuth Parameters
+                    </p>
+                    <p>Please try connecting your Gmail account again.</p>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 3000);
+                return;
+            }
+
+            try {
+                // Call EmailMCP callback endpoint
+                const response = await fetch(
+                    `${CONFIG.EMAILMCP_SERVICE_URL}/v1/oauth/callback?code=${code}&state=${state}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${CONFIG.EMAILMCP_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    statusMessage.innerHTML = `
+                        <p style="color: var(--secondary-color); font-weight: bold;">
+                            ✅ Gmail Connected Successfully!
+                        </p>
+                        <p>Email: ${result.email_address}</p>
+                        <p>Redirecting you back to the app...</p>
+                    `;
+
+                    // Redirect back to main app after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 2000);
+                } else {
+                    throw new Error(result.detail || result.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('OAuth callback error:', error);
+                statusMessage.innerHTML = `
+                    <p style="color: var(--danger-color); font-weight: bold;">
+                        ❌ Failed to Complete OAuth
+                    </p>
+                    <p>${error.message}</p>
+                    <p>Please try connecting your Gmail account again.</p>
+                `;
+                
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 5000);
+            }
+        }
+
+        // Execute callback handler on page load
+        handleOAuthCallback();
+    </script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - EmailMCP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 EmailMCP Connection Tester</h1>
+            <p class="subtitle">Test all API endpoints and connectivity</p>
+        </header>
+
+        <section>
+            <div class="card">
+                <h2>Configuration</h2>
+                <div class="form-group">
+                    <label>EmailMCP Service URL:</label>
+                    <input type="text" id="service-url" style="width: 100%; margin-bottom: 10px;">
+                </div>
+                <div class="form-group">
+                    <label>API Key:</label>
+                    <input type="text" id="api-key" style="width: 100%; margin-bottom: 10px;">
+                </div>
+                <div class="form-group">
+                    <label>Test User ID:</label>
+                    <input type="text" id="user-id" placeholder="user_123" style="width: 100%; margin-bottom: 20px;">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <h2>Test Results</h2>
+                <button onclick="runAllTests()" class="btn btn-primary" style="margin-bottom: 20px;">
+                    Run All Tests
+                </button>
+                <div id="test-results"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Initialize with config values
+        document.getElementById('service-url').value = CONFIG.EMAILMCP_SERVICE_URL;
+        document.getElementById('api-key').value = CONFIG.EMAILMCP_API_KEY;
+        document.getElementById('user-id').value = 'user_test_' + Date.now();
+
+        function getConfig() {
+            return {
+                serviceUrl: document.getElementById('service-url').value,
+                apiKey: document.getElementById('api-key').value,
+                userId: document.getElementById('user-id').value
+            };
+        }
+
+        function addTestResult(name, status, message, details = null) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultItem = document.createElement('div');
+            resultItem.className = 'test-result';
+            
+            const statusIcon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+            const statusColor = status === 'pass' ? 'var(--secondary-color)' : 
+                               status === 'fail' ? 'var(--danger-color)' : 'var(--warning-color)';
+            
+            let html = `
+                <div style="padding: 15px; margin: 10px 0; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid ${statusColor};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong>${statusIcon} ${name}</strong>
+                        <span style="color: ${statusColor}; font-weight: 600;">${status.toUpperCase()}</span>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">${message}</div>
+            `;
+            
+            if (details) {
+                html += `
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; color: var(--primary-color);">Show Details</summary>
+                        <pre style="background: white; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 10px; font-size: 0.85rem;">${JSON.stringify(details, null, 2)}</pre>
+                    </details>
+                `;
+            }
+            
+            html += '</div>';
+            resultItem.innerHTML = html;
+            resultsDiv.appendChild(resultItem);
+        }
+
+        async function testHealthEndpoint() {
+            const config = getConfig();
+            try {
+                const response = await fetch(`${config.serviceUrl}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addTestResult(
+                        'Health Check',
+                        'pass',
+                        `Service is healthy (Status: ${data.status})`,
+                        data
+                    );
+                    return true;
+                } else {
+                    addTestResult('Health Check', 'fail', 'Service returned non-200 status', data);
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('Health Check', 'fail', `Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testDocsEndpoint() {
+            const config = getConfig();
+            try {
+                const response = await fetch(`${config.serviceUrl}/docs`);
+                
+                if (response.ok) {
+                    addTestResult(
+                        'API Documentation',
+                        'pass',
+                        `Documentation is accessible at ${config.serviceUrl}/docs`
+                    );
+                    return true;
+                } else {
+                    addTestResult('API Documentation', 'warn', 'Documentation endpoint not accessible');
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('API Documentation', 'warn', `Could not access docs: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testUserProfile() {
+            const config = getConfig();
+            try {
+                const response = await fetch(
+                    `${config.serviceUrl}/v1/users/${config.userId}/profile`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addTestResult(
+                        'User Profile Endpoint',
+                        'pass',
+                        `Successfully retrieved profile for user ${config.userId}`,
+                        data
+                    );
+                    return true;
+                } else if (response.status === 404) {
+                    addTestResult(
+                        'User Profile Endpoint',
+                        'warn',
+                        'User not found (this is normal for new users)',
+                        data
+                    );
+                    return true;
+                } else {
+                    addTestResult('User Profile Endpoint', 'fail', `Error: ${data.detail || 'Unknown error'}`, data);
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('User Profile Endpoint', 'fail', `Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testOAuthInitiation() {
+            const config = getConfig();
+            try {
+                const response = await fetch(
+                    `${config.serviceUrl}/v1/oauth/authorize`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: config.userId,
+                            redirect_uri: window.location.origin + '/callback.html'
+                        })
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (response.ok && data.authorization_url) {
+                    addTestResult(
+                        'OAuth Initiation',
+                        'pass',
+                        'OAuth URL generated successfully (user can connect Gmail)',
+                        { authorization_url: data.authorization_url.substring(0, 100) + '...' }
+                    );
+                    return true;
+                } else {
+                    addTestResult('OAuth Initiation', 'fail', `Error: ${data.detail || 'Unknown error'}`, data);
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('OAuth Initiation', 'fail', `Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testEmailSending() {
+            const config = getConfig();
+            try {
+                const response = await fetch(
+                    `${config.serviceUrl}/v1/users/${config.userId}/messages`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            to: ['test@example.com'],
+                            subject: 'Test Email',
+                            body: 'This is a test email',
+                            body_type: 'text'
+                        })
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (response.status === 400 && data.detail?.includes('not connected')) {
+                    addTestResult(
+                        'Email Sending Endpoint',
+                        'warn',
+                        'Endpoint works but user needs to connect Gmail first (expected)',
+                        data
+                    );
+                    return true;
+                } else if (response.ok) {
+                    addTestResult(
+                        'Email Sending Endpoint',
+                        'pass',
+                        'Email sent successfully!',
+                        data
+                    );
+                    return true;
+                } else {
+                    addTestResult('Email Sending Endpoint', 'fail', `Error: ${data.detail || 'Unknown error'}`, data);
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('Email Sending Endpoint', 'fail', `Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testAnalytics() {
+            const config = getConfig();
+            try {
+                const response = await fetch(
+                    `${config.serviceUrl}/v1/reports/users/${config.userId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addTestResult(
+                        'Analytics Endpoint',
+                        'pass',
+                        `Analytics retrieved successfully`,
+                        data
+                    );
+                    return true;
+                } else if (response.status === 404) {
+                    addTestResult(
+                        'Analytics Endpoint',
+                        'warn',
+                        'No analytics data yet (user needs to send emails first)',
+                        data
+                    );
+                    return true;
+                } else {
+                    addTestResult('Analytics Endpoint', 'fail', `Error: ${data.detail || 'Unknown error'}`, data);
+                    return false;
+                }
+            } catch (error) {
+                addTestResult('Analytics Endpoint', 'fail', `Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<p style="text-align: center; color: var(--primary-color); font-weight: 600;">Running tests...</p>';
+            
+            const startTime = Date.now();
+            
+            // Run all tests sequentially
+            const results = [];
+            results.push(await testHealthEndpoint());
+            results.push(await testDocsEndpoint());
+            results.push(await testUserProfile());
+            results.push(await testOAuthInitiation());
+            results.push(await testEmailSending());
+            results.push(await testAnalytics());
+            
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+            const passed = results.filter(r => r).length;
+            const total = results.length;
+            
+            // Add summary
+            const summary = document.createElement('div');
+            summary.innerHTML = `
+                <div style="padding: 20px; margin: 20px 0; background: var(--bg-secondary); border-radius: 8px; text-align: center; border: 2px solid var(--primary-color);">
+                    <h3 style="margin-bottom: 10px;">Test Summary</h3>
+                    <p style="font-size: 1.5rem; font-weight: bold; color: ${passed === total ? 'var(--secondary-color)' : 'var(--warning-color)'};">
+                        ${passed} / ${total} tests passed
+                    </p>
+                    <p style="color: var(--text-secondary);">Completed in ${elapsed} seconds</p>
+                </div>
+            `;
+            resultsDiv.insertBefore(summary, resultsDiv.firstChild);
+        }
+    </script>
+</body>
+</html>
