@@ -53,7 +53,7 @@ echo "4. Frontend Configuration:"
 echo "   📍 Service URL: https://emailmcp-hcnqp547xa-uc.a.run.app"
 echo "   🔑 API Key: emailmcp-oWyFsIqTUhnoOZQDaEPBfMKOQV2ElAtw"
 echo "   🔄 Redirect URI: http://localhost:8080/callback.html"
-echo "   🌐 Google Client ID: 480969272523-fkgsdj73m89og99teqqbk13d15q172eq.apps.googleusercontent.com"
+echo "   🌐 Google Client ID: SALES OS"
 
 echo ""
 echo "🚀 Starting Frontend Server on http://localhost:8080"
