@@ -1,5 +1,11 @@
 # EmailMCP Frontend Integration Documentation
 
+**⚠️ MUCH SIMPLER VERSION AVAILABLE**: For direct EmailMCP integration without JWT tokens, backend servers, or Firestore complexity, see **[SIMPLE_INTEGRATION_GUIDE.md](./SIMPLE_INTEGRATION_GUIDE.md)**
+
+This document provides the original comprehensive (but overly complex) guide. **Most users should use the simplified version instead.**
+
+---
+
 Complete guide for integrating EmailMCP with your frontend application, including user authentication, Gmail OAuth, and Google Cloud Firestore data storage.
 
 ## Table of Contents
@@ -88,29 +94,20 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 const GoogleLoginComponent = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      // Send Google credential to your backend
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          credential: credentialResponse.credential
-        }),
-      });
-
-      const result = await response.json();
+      // For EmailMCP integration, just store user info locally
+      // No backend auth server needed!
+      const userInfo = {
+        id: `user_${Date.now()}`, // Simple unique ID
+        email: 'user@example.com', // You can decode from credentialResponse if needed
+        name: 'User Name'
+      };
       
-      if (result.success) {
-        // Store JWT token
-        localStorage.setItem('authToken', result.token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-        
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
-      } else {
-        console.error('Login failed:', result.error);
-      }
+      // Store user info for EmailMCP user_id
+      localStorage.setItem('user', JSON.stringify(userInfo));
+      
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
+      
     } catch (error) {
       console.error('Login error:', error);
     }
@@ -160,14 +157,13 @@ const GmailConnect = () => {
   const connectGmail = async () => {
     setLoading(true);
     try {
-      const authToken = localStorage.getItem('authToken');
       const userId = JSON.parse(localStorage.getItem('user'))?.id;
       
-      // Use actual EmailMCP OAuth endpoint
+      // Direct EmailMCP OAuth endpoint - no backend needed!
       const response = await fetch(`${process.env.REACT_APP_EMAILMCP_SERVICE_URL}/v1/oauth/authorize`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_EMAILMCP_API_KEY}`,
+          'Authorization': process.env.REACT_APP_EMAILMCP_API_KEY,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
