@@ -87,7 +87,8 @@ class MultiTenantEmailService:
     async def process_oauth_callback(
         self, 
         authorization_code: str, 
-        user_id: str
+        user_id: str,
+        redirect_uri: Optional[str] = None
     ) -> UserProfile:
         """
         Process OAuth callback and store user credentials
@@ -95,6 +96,7 @@ class MultiTenantEmailService:
         Args:
             authorization_code: Authorization code from OAuth callback
             user_id: User identifier from state parameter
+            redirect_uri: Redirect URI used in authorization (must match)
             
         Returns:
             UserProfile with connection details
@@ -107,7 +109,7 @@ class MultiTenantEmailService:
             'code': authorization_code,
             'client_id': self.gmail_client_id,
             'client_secret': self.gmail_client_secret,
-            'redirect_uri': 'postmessage',  # For server-side flow
+            'redirect_uri': redirect_uri or 'postmessage',  # Use provided redirect_uri or default
             'grant_type': 'authorization_code'
         }
         
