@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailMCP Sample Integration</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>📧 EmailMCP Sample Integration</h1>
+            <p class="subtitle">Complete Authentication & Email API Demo</p>
+        </header>
+
+        <!-- Auth Section -->
+        <section class="auth-section" id="auth-section">
+            <div class="card">
+                <h2>🔐 Authentication</h2>
+                <div id="google-signin-button"></div>
+                <div id="user-info" class="hidden">
+                    <div class="user-profile">
+                        <img id="user-avatar" src="" alt="User Avatar" class="avatar">
+                        <div>
+                            <h3 id="user-name"></h3>
+                            <p id="user-email"></p>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content (Hidden until logged in) -->
+        <div id="main-content" class="hidden">
+            
+            <!-- Connection Status -->
+            <section class="connection-section">
+                <div class="card">
+                    <h2>📡 Connection Status</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">Backend Server:</span>
+                            <span id="backend-status" class="status-indicator">⚪ Checking...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">EmailMCP Service:</span>
+                            <span id="emailmcp-status" class="status-indicator">⚪ Checking...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Gmail Connection:</span>
+                            <span id="gmail-status" class="status-indicator">⚪ Checking...</span>
+                        </div>
+                    </div>
+                    <button id="test-connectivity-btn" class="btn btn-secondary">Test All Connections</button>
+                </div>
+            </section>
+
+            <!-- Gmail OAuth Section -->
+            <section class="gmail-section">
+                <div class="card">
+                    <h2>📨 Gmail Integration</h2>
+                    <div id="gmail-connection-status">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Email Composer -->
+            <section class="composer-section">
+                <div class="card">
+                    <h2>✉️ Compose Email</h2>
+                    <form id="email-form">
+                        <div class="form-group">
+                            <label for="email-to">To: <span class="required">*</span></label>
+                            <input type="text" id="email-to" placeholder="recipient@example.com, another@example.com" required>
+                            <small>Separate multiple recipients with commas</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email-cc">CC:</label>
+                                <input type="text" id="email-cc" placeholder="cc@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="email-bcc">BCC:</label>
+                                <input type="text" id="email-bcc" placeholder="bcc@example.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-subject">Subject: <span class="required">*</span></label>
+                            <input type="text" id="email-subject" placeholder="Email subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-body">Message: <span class="required">*</span></label>
+                            <textarea id="email-body" rows="8" placeholder="Email message..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="email-html">
+                                Send as HTML
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="btn-text">Send Email</span>
+                                <span class="spinner hidden"></span>
+                            </button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                    <div id="email-result" class="hidden"></div>
+                </div>
+            </section>
+
+            <!-- Email Analytics -->
+            <section class="analytics-section">
+                <div class="card">
+                    <h2>📊 Email Analytics</h2>
+                    <div class="analytics-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-emails">0</div>
+                            <div class="stat-label">Total Emails</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="successful-emails">0</div>
+                            <div class="stat-label">Successful</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="failed-emails">0</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="success-rate">0%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="email-chart"></canvas>
+                    </div>
+                    <button id="refresh-analytics-btn" class="btn btn-secondary">Refresh Analytics</button>
+                </div>
+            </section>
+
+            <!-- Recent Emails -->
+            <section class="recent-emails-section">
+                <div class="card">
+                    <h2>📬 Recent Emails</h2>
+                    <div id="recent-emails-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notifications-container"></div>
+    </div>
+
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    <!-- Main Application -->
+    <script src="app.js"></script>
+</body>
+</html>
