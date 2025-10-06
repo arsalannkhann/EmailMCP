@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import List, Optional, Literal, Dict, Any
 
 class EmailRequest(BaseModel):
@@ -29,8 +29,8 @@ class EmailRequest(BaseModel):
         description="Whether body is HTML formatted"
     )
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "provider": "gmail",
                 "to": ["recipient@example.com"],
@@ -40,6 +40,7 @@ class EmailRequest(BaseModel):
                 "html": False
             }
         }
+    )
 
 # Multi-tenant OAuth and Email Models
 class OAuthRequest(BaseModel):
