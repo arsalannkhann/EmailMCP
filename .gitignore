@@ -39,7 +39,7 @@ yarn.lock
 .coverage
 htmlcov/
 *.cover
-
+CREDENTIALS_INTEGRATION_COMPLETE.md
 # OS
 .DS_Store
 Thumbs.db
