@@ -147,7 +147,7 @@ class GCPSecretsManager:
             log.error(f"Failed to delete secret {secret_name}: {e}")
             raise
     
-    async def get_email_credentials(self, provider: str = "gmail") -> Dict[str, Any]:
+    async def get_email_credentials(self, provider: str = "gmail") -> Optional[Dict[str, Any]]:
         """
         Get email credentials from GCP Secret Manager
         
@@ -155,10 +155,27 @@ class GCPSecretsManager:
             provider: Email provider name (gmail, outlook, etc.)
             
         Returns:
-            Dictionary containing credentials
+            Dictionary containing credentials or None if not found
         """
-        secret_name = f"emailmcp-{provider}-credentials"
-        return await self.get_secret(secret_name)
+        if provider == "gmail":
+            # Gmail credentials are stored in OAuth config format
+            secret_name = f"emailmcp-{provider}-oauth-config"
+            oauth_config = await self.get_secret(secret_name)
+            if oauth_config and 'web' in oauth_config:
+                # Extract the web configuration and return in expected format
+                web_config = oauth_config['web']
+                return {
+                    'client_id': web_config.get('client_id'),
+                    'client_secret': web_config.get('client_secret'),
+                    'auth_uri': web_config.get('auth_uri'),
+                    'token_uri': web_config.get('token_uri'),
+                    'project_id': web_config.get('project_id', self.project_id)
+                }
+            return oauth_config
+        else:
+            # Other providers use standard credentials format
+            secret_name = f"emailmcp-{provider}-credentials"
+            return await self.get_secret(secret_name)
     
     async def get_user_credentials(self, user_id: str) -> Optional[Dict[str, Any]]:
         """
