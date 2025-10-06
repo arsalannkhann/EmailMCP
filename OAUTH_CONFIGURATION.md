@@ -46,14 +46,21 @@ https://salesos.orionac.in/settings/
 
 ## Step 2: Configure Your Credentials
 
-### Method A: Using Environment Variables
+### Method A: Using Environment Variables (Recommended)
 
 Create or update your `.env` file:
 
 ```bash
+# Environment Configuration
+ENVIRONMENT=development  # or production
+
 # Gmail OAuth Configuration
 GMAIL_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GMAIL_CLIENT_SECRET=your-client-secret
+
+# Optional: Override default redirect URIs
+# OAUTH_REDIRECT_URI=http://localhost:8001/v1/oauth/callback
+# OAUTH_FRONTEND_ORIGIN=http://localhost:8000
 ```
 
 Example with provided credentials:
@@ -61,6 +68,8 @@ Example with provided credentials:
 GMAIL_CLIENT_ID=1009146957673-h7964rj4s2a9be9ekrqh0j2dehk4mu5t.apps.googleusercontent.com
 GMAIL_CLIENT_SECRET=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
 ```
+
+**Note:** The service now automatically determines redirect URIs based on your environment setting. See [OAUTH_ENVIRONMENT_CONFIG.md](OAUTH_ENVIRONMENT_CONFIG.md) for detailed configuration options.
 
 ### Method B: Using GCP Secret Manager (Production)
 
