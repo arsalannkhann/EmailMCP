@@ -7,6 +7,7 @@ A production-ready email service with complete multi-tenant architecture support
 - **Multi-Tenant Architecture** - Each user connects their own Gmail account
 - **OAuth 2.0 Integration** - Secure Gmail authentication for individual users
 - **Gmail API** - Send emails through Gmail API with user credentials
+- **LLM Integration** - Built-in LLM inference server for AI-powered email operations
 - **Cloud Native** - Deploy on AWS Fargate or GCP Cloud Run
 - **Secure Credentials** - AWS Secrets Manager or GCP Secret Manager integration
 - **Analytics & Reporting** - Track email sends, success rates, and user activity
@@ -53,6 +54,7 @@ GET /v1/reports/users/{user_id}
 
 - [GCP Deployment Guide](./GCP-DEPLOYMENT.md)
 - [AWS Deployment Guide](./DEPLOYMENT.md)
+- [LLM Integration Guide](./LLM_INTEGRATION.md) - **AI-powered email operations**
 - [OAuth Configuration Guide](./OAUTH_CONFIGURATION.md) - **Fix OAuth 404 errors**
 - [Multi-Tenant Integration](./docs/multi-tenant-integration.md)
 - [Gmail API Integration](./GMAIL_API_INTEGRATION.md)
