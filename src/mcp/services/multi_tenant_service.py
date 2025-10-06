@@ -3,7 +3,7 @@ Multi-tenant email service for handling user-specific Gmail OAuth and email send
 """
 import json
 from typing import Dict, Any, Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 import base64
 from email.mime.text import MIMEText
@@ -24,7 +24,15 @@ from ..schemas.multi_tenant import (
     PlatformSummary
 )
 from ..schemas.responses import EmailResponse
+from .firestore_service import FirestoreService
 
+# OAuth Scopes - aligned with Flask MCP for consistency
+GMAIL_OAUTH_SCOPES = [
+    'openid',
+    'https://mail.google.com/',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+]
 
 class MultiTenantEmailService:
     """Service for managing multi-tenant email operations"""
@@ -34,6 +42,7 @@ class MultiTenantEmailService:
         self.gmail_client_secret = settings.gmail_client_secret
         # In production, this will use GCP Secret Manager or AWS Secrets Manager
         self.secrets_manager = None
+        self.firestore_service = FirestoreService()
         self._init_secrets_manager()
         
     def _init_secrets_manager(self):
@@ -72,7 +81,7 @@ class MultiTenantEmailService:
             'client_id': self.gmail_client_id,
             'redirect_uri': redirect_uri,
             'response_type': 'code',
-            'scope': 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly',
+            'scope': ' '.join(GMAIL_OAUTH_SCOPES),
             'access_type': 'offline',
             'prompt': 'consent',
             'state': user_id
@@ -142,6 +151,24 @@ class MultiTenantEmailService:
             await self._store_user_secret(secret_name, secret_data)
         
         log.info(f"OAuth tokens stored for user {user_id}: {email_address}")
+        
+        # Create/update user profile in Firestore
+        user_profile_data = {
+            'id': user_id,
+            'email': email_address,
+            'gmail_connected': True,
+            'gmail_connected_at': datetime.now(timezone.utc).isoformat(),
+            'gmail_email': email_address,
+            'gmail_refresh_token_stored': True,
+            'total_emails_sent': 0,
+            'account_status': 'active',
+            'subscription_tier': 'free',
+            'rate_limit_quota': 100,
+            'rate_limit_used': 0,
+            'last_login': datetime.now(timezone.utc).isoformat()
+        }
+        
+        await self.firestore_service.create_user_profile(user_profile_data)
         
         return UserProfile(
             user_id=user_id,
@@ -271,20 +298,32 @@ class MultiTenantEmailService:
             
             log.info(f"Email sent for user {user_id}: {result['id']}")
             
-            return EmailResponse(
-                status="success",
+            response = EmailResponse(
+                status="sent",
                 message_id=result['id'],
                 provider="gmail_api",
                 timestamp=datetime.now()
             )
+            
+            # Log the transaction to Firestore
+            await self.log_email_transaction(user_id, email, response)
+            
+            return response
+            
         except Exception as e:
             log.error(f"Failed to send email for user {user_id}: {e}")
-            return EmailResponse(
+            
+            response = EmailResponse(
                 status="failed",
                 provider="gmail_api",
                 timestamp=datetime.now(),
                 error=str(e)
             )
+            
+            # Log the failed transaction to Firestore
+            await self.log_email_transaction(user_id, email, response)
+            
+            return response
     
     def _create_message(self, email: MultiTenantEmailRequest) -> str:
         """Create a message for sending via Gmail API"""
@@ -308,24 +347,36 @@ class MultiTenantEmailService:
             user_id: User identifier
             
         Returns:
-            UserProfile with connection details
+            UserProfile with current status
         """
-        secret_name = f"users/{user_id}/gmail"
-        secret_data = await self._get_user_secret(secret_name)
+        # Get user profile from Firestore
+        profile_data = await self.firestore_service.get_user_profile(user_id)
         
-        if not secret_data:
+        if profile_data:
+            # Parse connection date
+            connection_date = None
+            if profile_data.get('gmail_connected_at'):
+                try:
+                    connection_date = datetime.fromisoformat(profile_data['gmail_connected_at'].replace('Z', '+00:00'))
+                except:
+                    connection_date = None
+            
             return UserProfile(
                 user_id=user_id,
-                gmail_connected=False
+                email_address=profile_data.get('email', ''),
+                gmail_connected=profile_data.get('gmail_connected', False),
+                connection_date=connection_date,
+                total_emails_sent=profile_data.get('total_emails_sent', 0)
             )
-        
-        return UserProfile(
-            user_id=user_id,
-            email_address=secret_data.get('email_address'),
-            gmail_connected=True,
-            connection_date=datetime.fromisoformat(secret_data.get('connection_date', datetime.now().isoformat())),
-            total_emails_sent=0  # TODO: Get from database
-        )
+        else:
+            # Return default profile if not found
+            return UserProfile(
+                user_id=user_id,
+                email_address="",
+                gmail_connected=False,
+                connection_date=None,
+                total_emails_sent=0
+            )
     
     async def log_email_transaction(
         self, 
@@ -341,7 +392,30 @@ class MultiTenantEmailService:
             email: Email request details
             result: Email send result
         """
-        # TODO: Implement database logging
+        # Log to Firestore
+        email_data = {
+            'from_email': email.from_email,
+            'to_emails': email.to_emails,
+            'cc_emails': email.cc_emails or [],
+            'bcc_emails': email.bcc_emails or [],
+            'subject': email.subject,
+            'body': email.body,
+            'html_body': email.html_body,
+            'attachments': email.attachments or []
+        }
+        
+        result_data = {
+            'status': result.status,
+            'message_id': result.message_id,
+            'error': result.error
+        }
+        
+        await self.firestore_service.log_email_transaction(user_id, email_data, result_data)
+        
+        # Update user statistics
+        if result.status == 'sent':
+            await self.firestore_service.update_user_stats(user_id, 1)
+        
         log.info(f"Logged email for user {user_id}: status={result.status}")
     
     async def get_user_analytics(
@@ -363,18 +437,48 @@ class MultiTenantEmailService:
         Returns:
             EmailAnalyticsResponse with statistics
         """
-        # TODO: Implement database queries
-        # This is a placeholder implementation
+        # Get analytics from Firestore
+        analytics_data = await self.firestore_service.get_user_analytics(user_id, start_date, end_date)
+        
+        # Get recent email logs
+        recent_logs = await self.firestore_service.get_user_email_logs(user_id, limit, start_date, end_date)
+        
+        # Convert logs to RecentEmail objects
+        recent_emails = []
+        for log_entry in recent_logs:
+            recent_emails.append(RecentEmail(
+                subject=log_entry.get('subject', ''),
+                to_emails=log_entry.get('to_emails', []),
+                sent_at=log_entry.get('sent_at', ''),
+                status=log_entry.get('status', 'unknown')
+            ))
+        
+        # Convert daily stats
+        emails_by_day = []
+        for day_data in analytics_data.get('emails_by_day', []):
+            emails_by_day.append(EmailStatsDaily(
+                date=day_data.get('date', ''),
+                count=day_data.get('count', 0)
+            ))
+        
+        # Convert top recipients
+        top_recipients = []
+        for recipient_data in analytics_data.get('top_recipients', []):
+            top_recipients.append(TopRecipient(
+                email=recipient_data.get('email', ''),
+                count=recipient_data.get('count', 0)
+            ))
+        
         return EmailAnalyticsResponse(
             user_id=user_id,
             date_range={"start": start_date, "end": end_date},
-            total_emails=0,
-            successful_emails=0,
-            failed_emails=0,
-            success_rate=0.0,
-            emails_by_day=[],
-            top_recipients=[],
-            recent_emails=[]
+            total_emails=analytics_data.get('total_emails', 0),
+            successful_emails=analytics_data.get('successful_emails', 0),
+            failed_emails=analytics_data.get('failed_emails', 0),
+            success_rate=analytics_data.get('success_rate', 0.0),
+            emails_by_day=emails_by_day,
+            top_recipients=top_recipients,
+            recent_emails=recent_emails
         )
     
     async def get_platform_summary(
@@ -383,26 +487,51 @@ class MultiTenantEmailService:
         end_date: datetime
     ) -> PlatformSummary:
         """
-        Get platform-wide email analytics
+        Get platform-wide summary statistics
         
         Args:
-            start_date: Start date for analytics
-            end_date: End date for analytics
+            start_date: Start date for summary
+            end_date: End date for summary
             
         Returns:
-            PlatformSummary with platform statistics
+            PlatformSummary with aggregate statistics
         """
-        # TODO: Implement database queries
-        # This is a placeholder implementation
+        # Get platform metrics from Firestore
+        # For now, get metrics for the end date
+        metrics_data = await self.firestore_service.get_platform_metrics(end_date)
+        
+        # Get today's metrics
+        today = datetime.now(timezone.utc)
+        today_metrics = await self.firestore_service.get_platform_metrics(today)
+        
+        # Calculate week metrics (simplified - just use today's data)
+        emails_today = today_metrics.get('emails_sent', 0)
+        emails_this_week = emails_today * 7  # Simplified calculation
+        
+        # Create usage trends (simplified)
+        usage_trends = []
+        current_date = start_date
+        while current_date <= end_date:
+            day_metrics = await self.firestore_service.get_platform_metrics(current_date)
+            usage_trends.append(EmailStatsDaily(
+                date=current_date.strftime('%Y-%m-%d'),
+                total=day_metrics.get('emails_sent', 0),
+                successful=day_metrics.get('emails_sent', 0) - day_metrics.get('emails_failed', 0),
+                failed=day_metrics.get('emails_failed', 0)
+            ))
+            current_date += timedelta(days=1)
+            if len(usage_trends) >= 7:  # Limit to 7 days to avoid long queries
+                break
+        
         return PlatformSummary(
-            total_users=0,
-            active_users=0,
-            total_emails_sent=0,
-            emails_today=0,
-            emails_this_week=0,
-            overall_success_rate=0.0,
-            top_senders=[],
-            usage_trends=[]
+            total_users=metrics_data.get('total_users', 0),
+            active_users=metrics_data.get('active_users', 0),
+            total_emails_sent=metrics_data.get('emails_sent', 0),
+            emails_today=emails_today,
+            emails_this_week=emails_this_week,
+            overall_success_rate=metrics_data.get('success_rate', 0.0),
+            top_senders=[],  # TODO: Implement top senders query
+            usage_trends=usage_trends
         )
     
     async def disconnect_user_gmail(self, user_id: str):

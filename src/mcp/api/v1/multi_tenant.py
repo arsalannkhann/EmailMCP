@@ -14,7 +14,7 @@ router = APIRouter(prefix="/v1", tags=["multi-tenant"])
 @router.post("/oauth/authorize", response_model=OAuthResponse)
 async def initiate_oauth_flow(
     request: OAuthRequest,
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Initiate Gmail OAuth flow for a user"""
     try:
@@ -64,7 +64,7 @@ async def handle_oauth_callback_post(
     code: str = Query(..., description="Authorization code from Google"),
     state: str = Query(..., description="User ID from state parameter"),
     redirect_uri: Optional[str] = Query(None, description="Redirect URI used in authorization"),
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Handle OAuth callback via POST (for frontend bridge calls)"""
     try:
@@ -91,7 +91,7 @@ async def handle_oauth_callback_post(
 async def send_user_email(
     user_id: str,
     email: MultiTenantEmailRequest,
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Send email using user's own Gmail credentials"""
     try:
@@ -110,7 +110,7 @@ async def send_user_email(
 @router.get("/users/{user_id}/profile")
 async def get_user_profile(
     user_id: str,
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Get user's email profile and connection status"""
     try:
@@ -128,7 +128,7 @@ async def get_user_email_report(
     start_date: Optional[datetime] = Query(None),
     end_date: Optional[datetime] = Query(None),
     limit: int = Query(100, le=1000),
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Get email analytics for a specific user"""
     try:
@@ -154,7 +154,7 @@ async def get_user_email_report(
 async def get_platform_summary(
     start_date: Optional[datetime] = Query(None),
     end_date: Optional[datetime] = Query(None),
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Get platform-wide email analytics"""
     try:
@@ -174,7 +174,7 @@ async def get_platform_summary(
 @router.delete("/users/{user_id}/gmail")
 async def disconnect_user_gmail(
     user_id: str,
-    credentials = Depends(verify_api_key)
+    _credentials = Depends(verify_api_key)
 ):
     """Disconnect user's Gmail account"""
     try:
