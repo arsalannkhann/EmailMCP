@@ -4,9 +4,15 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import uuid
 import time
+import sys
+import os
 from .api.v1 import messages, multi_tenant
 from .core.config import settings
 from .core.logging import log
+
+# Add root directory to path to import temp.py
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from temp import llm_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -55,6 +61,7 @@ async def add_request_id(request: Request, call_next):
 
 app.include_router(messages.router)
 app.include_router(multi_tenant.router)
+app.include_router(llm_router)  # Add LLM inference endpoints
 
 @app.get("/")
 async def root():
