@@ -31,8 +31,8 @@ class TestGmailOAuthFlow:
         assert "client_id=test_client_id" in oauth_url
         assert "redirect_uri=http" in oauth_url
         assert f"state={user_id}" in oauth_url
-        # Scope is URL encoded, check for gmail.send in any form
-        assert "gmail.send" in oauth_url
+        # Scope is URL encoded, check for mail.google.com (which includes all Gmail permissions)
+        assert "mail.google.com" in oauth_url
         assert "access_type=offline" in oauth_url
         assert "prompt=consent" in oauth_url
     

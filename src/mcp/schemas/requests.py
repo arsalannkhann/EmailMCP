@@ -46,7 +46,7 @@ class EmailRequest(BaseModel):
 class OAuthRequest(BaseModel):
     """OAuth authorization request for user"""
     user_id: str
-    redirect_uri: str
+    redirect_uri: Optional[str] = None  # Optional, uses environment default if not provided
 
 class MultiTenantEmailRequest(BaseModel):
     """Request model for multi-tenant email sending"""

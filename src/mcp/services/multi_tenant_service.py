@@ -66,20 +66,23 @@ class MultiTenantEmailService:
                 except ImportError:
                     log.warning("AWS Secrets Manager not available")
     
-    async def generate_oauth_url(self, user_id: str, redirect_uri: str) -> str:
+    async def generate_oauth_url(self, user_id: str, redirect_uri: Optional[str] = None) -> str:
         """
         Generate Gmail OAuth authorization URL for a user
         
         Args:
             user_id: Unique identifier for the user
-            redirect_uri: OAuth redirect URI
+            redirect_uri: OAuth redirect URI (optional, uses environment default if not provided)
             
         Returns:
             Authorization URL string
         """
+        # Use provided redirect_uri or fall back to environment-based default
+        effective_redirect_uri = redirect_uri or settings.get_default_oauth_redirect_uri()
+        
         params = {
             'client_id': self.gmail_client_id,
-            'redirect_uri': redirect_uri,
+            'redirect_uri': effective_redirect_uri,
             'response_type': 'code',
             'scope': ' '.join(GMAIL_OAUTH_SCOPES),
             'access_type': 'offline',
@@ -90,7 +93,7 @@ class MultiTenantEmailService:
         base_url = 'https://accounts.google.com/o/oauth2/v2/auth'
         oauth_url = f"{base_url}?{urlencode(params)}"
         
-        log.info(f"Generated OAuth URL for user: {user_id}")
+        log.info(f"Generated OAuth URL for user: {user_id} with redirect_uri: {effective_redirect_uri}")
         return oauth_url
     
     async def process_oauth_callback(
@@ -105,7 +108,7 @@ class MultiTenantEmailService:
         Args:
             authorization_code: Authorization code from OAuth callback
             user_id: User identifier from state parameter
-            redirect_uri: Redirect URI used in authorization (must match)
+            redirect_uri: Redirect URI used in authorization (must match, uses environment default if not provided)
             
         Returns:
             UserProfile with connection details
@@ -113,14 +116,19 @@ class MultiTenantEmailService:
         # Exchange authorization code for tokens
         import requests
         
+        # Use provided redirect_uri or fall back to environment-based default
+        effective_redirect_uri = redirect_uri or settings.get_default_oauth_redirect_uri()
+        
         token_url = 'https://oauth2.googleapis.com/token'
         token_data = {
             'code': authorization_code,
             'client_id': self.gmail_client_id,
             'client_secret': self.gmail_client_secret,
-            'redirect_uri': redirect_uri or 'postmessage',  # Use provided redirect_uri or default
+            'redirect_uri': effective_redirect_uri,
             'grant_type': 'authorization_code'
         }
+        
+        log.info(f"Exchanging authorization code for tokens with redirect_uri: {effective_redirect_uri}")
         
         response = requests.post(token_url, data=token_data)
         response.raise_for_status()
